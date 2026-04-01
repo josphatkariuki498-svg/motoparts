@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <span style="font-size:14px;color:var(--text-secondary);">Don't have an account?</span>
       <a href="/spares/motoparts/customer/register.php" style="color:var(--primary);font-weight:600;text-decoration:none;margin-left:6px;">Create one</a>
     </div>
-    <div style="margin-top:24px;padding:16px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border);">
+    <div style="margin-top:23px;padding:16px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border);">
       <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Demo Credentials</div>
       <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong style="color:var(--text-primary);">Admin:</strong> admin@motoparts.com / admin123</div>
       <div style="font-size:13px;color:var(--text-secondary);"><strong style="color:var(--text-primary);">Customer:</strong> john@example.com / admin123</div>
