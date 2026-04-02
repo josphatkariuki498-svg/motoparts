@@ -6,27 +6,44 @@ if (!defined('DB_HOST')) define('DB_HOST', getenv('MYSQL_HOST')     ?: 'localhos
 if (!defined('DB_USER')) define('DB_USER', getenv('MYSQL_USER')     ?: 'root');
 if (!defined('DB_PASS')) define('DB_PASS', getenv('MYSQL_PASSWORD') ?: '');
 if (!defined('DB_NAME')) define('DB_NAME', getenv('MYSQL_DATABASE') ?: 'motoparts_db');
-if (!defined('DB_PORT')) define('DB_PORT', getenv('MYSQL_PORT')     ?: 3306);
+if (!defined('DB_PORT')) define('DB_PORT', (int)(getenv('MYSQL_PORT') ?: 3306));
 if (!defined('SITE_NAME')) define('SITE_NAME', 'MotoParts Kenya');
 if (!defined('CURRENCY'))  define('CURRENCY',  'KSh');
 
-// Start session only once
+// ============================================
+// Base URL — auto detects local vs Railway
+// ============================================
+if (!defined('BASE_URL')) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host     = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $isLocal  = in_array(explode(':', $host)[0], ['localhost', '127.0.0.1']);
+    $base     = $isLocal ? '/spares/motoparts' : '';
+    define('BASE_URL', $protocol . '://' . $host . $base);
+}
+
+// ============================================
+// Session
+// ============================================
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Create connection — singleton pattern prevents redeclaration errors
+// ============================================
+// Database — singleton
+// ============================================
 if (!function_exists('getDB')) {
     function getDB() {
         static $conn = null;
         if ($conn === null) {
-          $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+            mysqli_report(MYSQLI_REPORT_OFF);
+            $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, (int)DB_PORT);
             if ($conn->connect_error) {
                 http_response_code(500);
                 die('<div style="font-family:sans-serif;padding:40px;text-align:center;">
                     <h2 style="color:#e63329;">Database Connection Failed</h2>
-                    <p>Could not connect to <strong>' . DB_NAME . '</strong>. Check your credentials in <code>includes/config.php</code>.</p>
-                    <pre style="text-align:left;background:#f4f4f4;padding:12px;border-radius:6px;">' . htmlspecialchars($conn->connect_error) . '</pre>
+                    <p>Could not connect to <strong>' . DB_NAME . '</strong>.</p>
+                    <pre style="text-align:left;background:#f4f4f4;padding:12px;border-radius:6px;">'
+                    . htmlspecialchars($conn->connect_error) . '</pre>
                 </div>');
             }
             $conn->set_charset('utf8mb4');
@@ -35,6 +52,9 @@ if (!function_exists('getDB')) {
     }
 }
 
+// ============================================
+// Auth Helpers
+// ============================================
 if (!function_exists('isLoggedIn')) {
     function isLoggedIn() {
         return isset($_SESSION['user_id']);
@@ -51,23 +71,24 @@ if (!function_exists('requireLogin')) {
     function requireLogin() {
         if (!isLoggedIn()) {
             $redirect = urlencode($_SERVER['REQUEST_URI'] ?? '');
-            header('Location: /spares/motoparts/customer/login.php' . ($redirect ? '?redirect=' . $redirect : ''));
+            header('Location: ' . BASE_URL . '/customer/login.php' . ($redirect ? '?redirect=' . $redirect : ''));
             exit;
         }
     }
 }
 
-// NOTE: requireAdmin() here redirects to CUSTOMER login (for front-end pages).
-// The admin panel uses its OWN requireAdmin() in admin/includes/auth.php.
 if (!function_exists('requireAdmin')) {
     function requireAdmin() {
         if (!isAdmin()) {
-            header('Location: /spares/motoparts/customer/login.php');
+            header('Location: ' . BASE_URL . '/customer/login.php');
             exit;
         }
     }
 }
 
+// ============================================
+// Utility Helpers
+// ============================================
 if (!function_exists('sanitize')) {
     function sanitize($data) {
         return htmlspecialchars(strip_tags(trim((string)$data)), ENT_QUOTES, 'UTF-8');

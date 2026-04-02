@@ -1,12 +1,21 @@
 <?php
-// ============================================================
-// Admin DB Configuration
-// C:\xampp\htdocs\spares\motoparts\admin\includes\db.php
-// ============================================================
-if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
-if (!defined('DB_USER')) define('DB_USER', 'root');
-if (!defined('DB_PASS')) define('DB_PASS', '');
-if (!defined('DB_NAME')) define('DB_NAME', 'motoparts_db');
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+function getDB() {
+    $host = getenv('MYSQLHOST');
+    $user = getenv('MYSQLUSER');
+    $pass = getenv('MYSQLPASSWORD');
+    $db   = getenv('MYSQLDATABASE');
+    $port = getenv('MYSQLPORT') ?: 3306;
+
+    $conn = new mysqli($host, $user, $pass, $db, (int)$port);
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+    return $conn;
+}
+?>
 
 // Create connection — use global $conn so login.php can use $conn->prepare()
 if (!isset($GLOBALS['_moto_conn'])) {

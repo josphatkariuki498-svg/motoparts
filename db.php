@@ -1,6 +1,17 @@
 <?php
-// Root db.php — delegates to the canonical includes/config.php
-// Prevents "Cannot redeclare" errors if included more than once
-if (!function_exists('getDB')) {
-    require_once __DIR__ . '/includes/config.php';
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+function getDB() {
+    $host = getenv('MYSQLHOST');
+    $user = getenv('MYSQLUSER');
+    $pass = getenv('MYSQLPASSWORD');
+    $db   = getenv('MYSQLDATABASE');
+    $port = getenv('MYSQLPORT') ?: 3306;
+
+    $conn = new mysqli($host, $user, $pass, $db, (int)$port);
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+    return $conn;
 }
+?>
